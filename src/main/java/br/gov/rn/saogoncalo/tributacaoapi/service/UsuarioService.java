@@ -3,6 +3,9 @@ package br.gov.rn.saogoncalo.tributacaoapi.service;
 import br.gov.rn.saogoncalo.tributacaoapi.model.Usuario;
 import br.gov.rn.saogoncalo.tributacaoapi.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -11,10 +14,19 @@ import java.util.Optional;
 
 @Service
 @Transactional
-public class UsuarioService {
+public class UsuarioService implements UserDetailsService {
 
     @Autowired
     private UsuarioRepository repository;
+
+    @Override
+    public UserDetails loadUserByUsername(String matricula) throws UsernameNotFoundException {
+        Optional<Usuario> usuario = repository.findByMatricula(matricula);
+        if (usuario.isPresent()) {
+            return usuario.get();
+        }
+        throw new UsernameNotFoundException("Usuário ou Senha inválidos");
+    }
 
     public List<Usuario> buscaTodos() {
         return repository.findAll();
@@ -31,5 +43,4 @@ public class UsuarioService {
     public void removePorId(Long id) {
         repository.deleteById(id);
     }
-
 }
